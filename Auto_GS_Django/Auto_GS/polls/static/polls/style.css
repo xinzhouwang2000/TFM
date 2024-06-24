@@ -1,0 +1,35 @@
+body {
+    font-family: Arial, sans-serif;
+    font-size: medium;
+    margin: 20;
+    padding: 20;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+.container {
+    max-width: 70%;
+    margin: 50px auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    text-align: center;
+}
+
+.accordion{
+    margin: 50px auto;
+}
+
+.header{
+    margin: 50px auto;
+    padding: 20px;
+}
+
+
+h1 {
+    text-align: center;
+}
+
+form {
+    text-align: center;
+}

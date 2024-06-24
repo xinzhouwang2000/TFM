@@ -1,0 +1,44 @@
+
+/* Estilos generales para el navbar */
+nav {
+    background-color: #333; /* Color de fondo del navbar */
+    overflow: hidden;
+    margin: 50px auto;
+    padding: 20px;
+}
+
+nav ul {
+    list-style-type: none; /* Quita los puntos de la lista */
+    margin: 0;
+    padding: 0;
+}
+
+nav ul li {
+    float: left; /* Alinea los elementos del navbar en línea */
+}
+
+nav ul li a {
+    display: block; /* Hace que los enlaces del navbar se muestren como bloques */
+    color: white; /* Color del texto de los enlaces */
+    text-align: center; /* Centra el texto dentro de los enlaces */
+    padding: 14px 16px; /* Espaciado interno de los enlaces */
+    text-decoration: none; /* Quita el subrayado de los enlaces */
+}
+
+/* Estilo para el enlace activo (página actual) */
+nav ul li a.active {
+    background-color: #4CAF50; /* Color de fondo del enlace activo */
+}
+
+/* Cambia el color del enlace al pasar el mouse por encima */
+nav ul li a:hover {
+    background-color: #555; /* Color de fondo al pasar el mouse */
+}
+
+/* Estilos para hacer el navbar responsivo */
+@media screen and (max-width: 600px) {
+    nav ul li {
+        float: none; /* Cambia el comportamiento de los elementos a apilados */
+    }
+}
+
