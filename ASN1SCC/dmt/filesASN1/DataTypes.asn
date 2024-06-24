@@ -1,0 +1,90 @@
+--------------------------------------------------------------------------------
+--                                                                            --
+--           Copyright (C) 2022 Universidad Politécnica de Madrid             --
+--                                                                            --
+--                           H E R C C U L E S                                --
+--                                                                            --
+--                              Data  Types                                   --
+--                                                                            --
+--  This is free software;  you can redistribute it  and/or modify it  under  --
+--  terms of the  GNU General Public License as published  by the Free Soft-  --
+--  ware  Foundation;  either version 3,  or (at your option) any later ver-  --
+--  sion.  This software is distributed in the hope  that it will be useful,  --
+--  but WITHOUT ANY WARRANTY;  without even the implied warranty of MERCHAN-  --
+--  TABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public  --
+--  License for  more details.  You should have  received  a copy of the GNU  --
+--  General  Public  License  distributed  with  this  software;   see  file  --
+--  COPYING3.  If not, go to http://www.gnu.org/licenses for a complete copy  --
+--  of the license.                                                           --
+--                                                                            --
+--------------------------------------------------------------------------------
+
+-- Purpose:
+--   This module contains all the basic data types definitions shared across
+--   modules. This module does not depend on any other, therefore
+--   it is the most stable.
+--   E.g.: the 16-bit integer or the switch status won't change.
+
+DataTypes DEFINITIONS AUTOMATIC TAGS ::=
+BEGIN
+
+    EXPORTS ALL;
+
+    --  Empty sequence as null  ------------------------------------------------
+
+    Null-Type ::= SEQUENCE {}
+
+    --  Boolean  ---------------------------------------------------------------
+
+    Boolean-Type ::= BOOLEAN
+
+    --  Integers  --------------------------------------------------------------
+
+    UINT8-Type  ::= INTEGER (0 .. 255)
+    UINT16-Type ::= INTEGER (0 .. 65535)
+    UINT32-Type ::= INTEGER (0 .. 4294967295)
+    UINT64-Type ::= INTEGER (0 .. 18446744073709551615)
+
+    INT8-Type   ::= INTEGER (-128 .. 127)
+    INT16-Type  ::= INTEGER (-32768 .. 32767)
+    INT32-Type  ::= INTEGER (-2147483648 .. 2147483647)
+    INT64-Type  ::= INTEGER (-9223372036854775808 .. 9223372036854775807)
+
+    --  Floating point types  --------------------------------------------------
+
+    FLOAT32-Type ::= REAL (-3.4E+38 .. +3.4E+38)
+    FLOAT64-Type ::= REAL (-1.7E+308 .. +1.7E+308)
+
+    --  Strings  ---------------------------------------------------------------
+
+    OCTSTR-VARIABLE-LEN  ::= OCTET STRING (SIZE(0 .. 1024))
+    CHARSTR-VARIABLE-LEN ::= IA5String (SIZE(0 .. 1024))
+
+    --  Time types  ------------------------------------------------------------
+
+    Epoch-Type ::= INT32-Type
+    -- UNIX epochs are SIGNED 32 bits,
+    -- Y2K38 :-(  Hopefully HERCCULES is launched in 2023!
+
+    Absolute-Time-Type ::= SEQUENCE {
+        secs  Epoch-Type, -- Seconds and
+        usecs Epoch-Type  -- microseconds since the UNIX epoch
+    }
+
+    Relative-Time-Type ::= FLOAT32-Type
+    -- With nanoseconds precision
+
+    --  BASIC Analogue & Digital Signals  --------------------------------------
+
+    Analogue-Raw-Data ::= INT16-Type
+    -- 16 bit ADC
+
+    Duty-Cycle-Type ::= REAL (0.0 .. 100.0)
+
+    Heater-Power-Type ::= REAL (0.0 .. 5.0)
+
+    Switch-Status ::= ENUMERATED {
+        on, off
+    }
+
+END

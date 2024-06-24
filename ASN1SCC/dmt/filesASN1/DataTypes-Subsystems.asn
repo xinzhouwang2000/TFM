@@ -1,0 +1,227 @@
+--------------------------------------------------------------------------------
+--                                                                            --
+--           Copyright (C) 2022 Universidad Politécnica de Madrid             --
+--                                                                            --
+--                           H E R C C U L E S                                --
+--                                                                            --
+--                Analogue and Digital Signals Data Types                     --
+--                                                                            --
+--  This is free software;  you can redistribute it  and/or modify it  under  --
+--  terms of the  GNU General Public License as published  by the Free Soft-  --
+--  ware  Foundation;  either version 3,  or (at your option) any later ver-  --
+--  sion.  This software is distributed in the hope  that it will be useful,  --
+--  but WITHOUT ANY WARRANTY;  without even the implied warranty of MERCHAN-  --
+--  TABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public  --
+--  License for  more details.  You should have  received  a copy of the GNU  --
+--  General  Public  License  distributed  with  this  software;   see  file  --
+--  COPYING3.  If not, go to http://www.gnu.org/licenses for a complete copy  --
+--  of the license.                                                           --
+--                                                                            --
+--------------------------------------------------------------------------------
+
+DataTypes-Subsystems DEFINITIONS ::= BEGIN
+
+    IMPORTS
+        Null-Type,
+        Epoch-Type,
+        Relative-Time-Type,
+        Absolute-Time-Type,
+        FLOAT32-Type,
+        INT8-Type,
+        Switch-Status,
+        Analogue-Raw-Data,
+        Heater-Power-Type  FROM DataTypes
+
+        PCU-Mode,
+        HTL-Mode,
+        NADS-Mode,
+        Env-Lab-Mode,
+        Att-Lab-Mode  FROM DataTypes-OperatingModes;
+
+
+    -------------------------------------------------
+    -- Template for the creation of subsystem data --
+    -------------------------------------------------
+
+    Subsystem-Data-Template {Mode-Type, Payload-Type} ::= SEQUENCE {
+        snapshot-time  Absolute-Time-Type,   -- specifies when the payload was measured
+        mission-time   Relative-Time-Type,   -- and its relative timestamp.
+        mode           Mode-Type,            -- operating mode of the subsystem
+        payload        Payload-Type          -- actual payload
+    }
+
+    --------------------------
+    -- Power & Control Unit --
+    --------------------------
+
+    PCU-Data ::= Subsystem-Data-Template {
+        PCU-Mode,
+
+        SEQUENCE {
+            sensor-data SEQUENCE {
+                power-watts          FLOAT32-Type,
+                current-amps         FLOAT32-Type,
+                voltage-bus-volts    FLOAT32-Type,
+                voltage-shunt-volts  FLOAT32-Type,
+                digital-temperature  INT8-Type
+            },
+
+            switches PCU-PS-Lines-Status
+        }
+    }
+
+    Power-Supply-Line-ID ::= ENUMERATED {
+        sdpu, -- SDPU: Sensor Data Processing Unit PCB
+        tmu,  -- TMU:  Thermal Measurement Unit PCB
+        atl   -- ATL:  Attitude Lab PCB
+    }
+
+    PCU-PS-Lines-Status ::= SEQUENCE { -- Power Supply Lines Status
+        al-line    Switch-Status,
+        tmu-line   Switch-Status,
+        sdpu-line  Switch-Status
+    }
+
+    -----------------------
+    -- Heat Transfer Lab --
+    -----------------------
+
+    HTL-Data ::= Subsystem-Data-Template {
+        HTL-Mode,
+        SEQUENCE {
+            thermistors  SEQUENCE (SIZE(28)) OF Analogue-Raw-Data,
+            heaters      SEQUENCE (SIZE(4))  OF Heater-Power-Type
+        }
+    }
+
+    HTL-Heater-ID ::= ENUMERATED {
+        experiment1-heater,
+        experiment2-heater,
+        experiment3-heater,
+        experiment4-heater
+    }
+
+    -----------------------
+    -- Environmental Lab --
+    -----------------------
+
+    EnvLab-Data ::= Subsystem-Data-Template {
+        Env-Lab-Mode,
+        SEQUENCE {
+            upwards       EnvLab-Experiment-Data,
+            downwards     EnvLab-Experiment-Data,
+            pressure-data EnvLab-Pressure-Data
+        }
+    }
+
+    -- Experiment's data:
+
+    EnvLab-Experiment-Data ::= SEQUENCE {
+        -- Env Lab heater status, affects both pyra/pyrgeo-meter --
+        heater Switch-Status,
+
+        -- Env Lab Experiments sensors readings --
+        analogue-data EnvLab-Experiment-Data-Sensors
+    }
+
+    EnvLab-Experiment-Data-Sensors ::= SEQUENCE {
+        pyranometer-reading      Analogue-Raw-Data,
+        pyrgeometer-reading      Analogue-Raw-Data,
+        pyranometer-temperature  Analogue-Raw-Data,
+        pyrgeometer-temperature  Analogue-Raw-Data
+    }
+
+    -- Pressure data:
+
+    EnvLab-Pressure-Data ::= SEQUENCE {
+        dif-barometers  SEQUENCE (SIZE(4)) OF Analogue-Raw-Data,
+        abs-barometers  SEQUENCE (SIZE(2)) OF Absolute-Barometer
+    }
+
+    Absolute-Barometer ::= SEQUENCE {
+        pressure-raw Analogue-Raw-Data,
+        pressure-mbar FLOAT32-Type,
+
+        temperature-raw Analogue-Raw-Data,
+        temperature-celsius FLOAT32-Type
+    }
+
+    -- ID for EL's heaters.
+
+    EnvLab-Heater-ID ::= ENUMERATED {
+        upwards-heater,
+        downwards-heater
+    }
+
+    --------------------------------------------------
+    -- Navigational & Attitude Determination System --
+    --------------------------------------------------
+
+    -- Nads data = IMU + GPS
+
+    NADS-Data ::= Subsystem-Data-Template {
+        NADS-Mode,
+        SEQUENCE {
+            imu IMU-Data,
+            gps GPS-Data
+        }
+    }
+
+    -- IMU & its auxiliary data types:
+
+    IMU-Data ::= SEQUENCE {
+        sensors-data IMU-Sensors-Data,
+        fusion-data  IMU-Fusion-Data,
+        temperatures IMU-Temperatures
+    }
+
+    IMU-Sensors-Data ::= SEQUENCE {
+        acceleration      Axis-Data,
+        mag-field         Axis-Data,
+        angular-velocity  Axis-Data
+    }
+
+    IMU-Fusion-Data ::= SEQUENCE {
+        euler-orientation       Axis-Data,
+        liner-acceleration      Axis-Data,
+        gravity                 Axis-Data,
+        quaternion-orientation  Quaternion-Data
+    }
+
+    IMU-Temperatures ::= SEQUENCE {
+        temperature-accel INT8-Type,
+        temperature-gyro  INT8-Type
+    }
+
+    Axis-Data ::= SEQUENCE {
+        x FLOAT32-Type,
+        y FLOAT32-Type,
+        z FLOAT32-Type
+    }
+
+    Quaternion-Data ::= SEQUENCE {
+        w FLOAT32-Type,
+        x FLOAT32-Type,
+        y FLOAT32-Type,
+        z FLOAT32-Type
+    }
+
+    -- GPS data
+
+    GPS-Data ::= Null-Type -- TODO: TBD
+
+    ------------------
+    -- Attitude Lab --
+    ------------------
+
+    Att-Lab-Data ::= Subsystem-Data-Template {
+        Att-Lab-Mode,
+        Att-Lab-Data-Measurements
+    }
+
+    Att-Lab-Data-Measurements ::= SEQUENCE {
+        photodiodes  SEQUENCE (SIZE(4)) OF Analogue-Raw-Data,
+        thermistors  SEQUENCE (SIZE(2)) OF Analogue-Raw-Data
+    }
+
+END
